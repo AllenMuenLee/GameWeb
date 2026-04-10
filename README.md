@@ -39,9 +39,11 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 - Network degradation mode is enabled in `GameEngine`: when RTT is high, sync falls back to `10Hz`; otherwise it runs `20Hz`.
 - Server sync route returns `suggestedSyncHz` and `serverProcessingMs` for client-side adaptation and visibility.
-- Required env vars for Redis in Vercel:
+- Required env vars for persistent Redis storage (Vercel / production):
   - `UPSTASH_REDIS_REST_URL`
   - `UPSTASH_REDIS_REST_TOKEN`
+- In production, in-memory fallback is disabled by default. If Redis vars are missing, APIs return `503 STORAGE_NOT_CONFIGURED` instead of silently using non-durable memory.
+- `ALLOW_MEMORY_STORE_IN_PROD=1` can temporarily bypass this guard for debugging only (not recommended for real users).
 
 ### Load Test
 

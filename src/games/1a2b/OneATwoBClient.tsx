@@ -16,6 +16,14 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+function toUiError(errorCode: string, fallback: string): string {
+  if (errorCode === "ROOM_NOT_FOUND") return "Room not found or expired.";
+  if (errorCode === "STORAGE_NOT_CONFIGURED") {
+    return "Server storage is not configured. Contact admin to set Redis env vars.";
+  }
+  return fallback;
+}
+
 export default function OneATwoBClient() {
   const [playerName, setPlayerName] = useState("");
   const [joinCode, setJoinCode] = useState("");
@@ -48,7 +56,7 @@ export default function OneATwoBClient() {
       | ApiError;
 
     if (!res.ok || "error" in data) {
-      setError("Failed to create room.");
+      setError("error" in data ? toUiError(data.error, "Failed to create room.") : "Failed to create room.");
       return;
     }
 
@@ -69,7 +77,11 @@ export default function OneATwoBClient() {
 
     const data = (await res.json()) as { playerId: string; room: PublicRoomState } | ApiError;
     if (!res.ok || "error" in data) {
-      setError("Failed to join. Check room code or room capacity.");
+      setError(
+        "error" in data
+          ? toUiError(data.error, "Failed to join. Check room code or room capacity.")
+          : "Failed to join. Check room code or room capacity.",
+      );
       return;
     }
 
@@ -83,7 +95,7 @@ export default function OneATwoBClient() {
     const data = (await res.json()) as RoomApi | ApiError;
 
     if (!res.ok || "error" in data) {
-      setError("Room not found or expired.");
+      setError("error" in data ? toUiError(data.error, "Room not found or expired.") : "Room not found or expired.");
       return;
     }
 
@@ -120,7 +132,11 @@ export default function OneATwoBClient() {
 
     const data = (await res.json()) as RoomApi | ApiError;
     if (!res.ok || "error" in data) {
-      setError("Action failed. Check if it is your turn.");
+      setError(
+        "error" in data
+          ? toUiError(data.error, "Action failed. Check if it is your turn.")
+          : "Action failed. Check if it is your turn.",
+      );
       return;
     }
 

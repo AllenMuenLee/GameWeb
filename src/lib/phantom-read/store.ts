@@ -1,12 +1,10 @@
 import { Redis } from "@upstash/redis";
 import { GameState } from "@/types/game";
+import { canUseRedisStore, ensurePersistentStoreConfigured } from "@/lib/server/storage-runtime";
 
 const ROOM_TTL_SECONDS = 60 * 60 * 2;
 
-const hasRedisEnv =
-  Boolean(process.env.UPSTASH_REDIS_REST_URL) && Boolean(process.env.UPSTASH_REDIS_REST_TOKEN);
-
-const redis = hasRedisEnv ? Redis.fromEnv() : null;
+const redis = canUseRedisStore() ? Redis.fromEnv() : null;
 
 function roomKey(roomId: string): string {
   return `phantom-read:room:${roomId.toUpperCase()}`;
@@ -25,6 +23,7 @@ function getMemoryStore(): Map<string, GameState> {
 }
 
 export async function roomExists(roomId: string): Promise<boolean> {
+  ensurePersistentStoreConfigured();
   const key = roomKey(roomId);
   if (redis) {
     return (await redis.exists(key)) === 1;
@@ -33,6 +32,7 @@ export async function roomExists(roomId: string): Promise<boolean> {
 }
 
 export async function getRoom(roomId: string): Promise<GameState | null> {
+  ensurePersistentStoreConfigured();
   const key = roomKey(roomId);
   if (redis) {
     return (await redis.get<GameState>(key)) ?? null;
@@ -41,6 +41,7 @@ export async function getRoom(roomId: string): Promise<GameState | null> {
 }
 
 export async function saveRoom(state: GameState): Promise<void> {
+  ensurePersistentStoreConfigured();
   const key = roomKey(state.roomId);
   if (redis) {
     await redis.set(key, state, { ex: ROOM_TTL_SECONDS });
@@ -48,4 +49,3 @@ export async function saveRoom(state: GameState): Promise<void> {
   }
   getMemoryStore().set(key, state);
 }
-

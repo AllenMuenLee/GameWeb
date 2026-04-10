@@ -11,15 +11,13 @@ import {
   initializeTicTacToeRoom,
   onJoinTicTacToe,
 } from "@/games/tic-tac-toe/server";
+import { canUseRedisStore, ensurePersistentStoreConfigured } from "@/lib/server/storage-runtime";
 import { GameType, PublicRoomState, Room } from "./types";
 
 const ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const ROOM_TTL_SECONDS = 60 * 60 * 24;
 
-const hasRedisEnv =
-  Boolean(process.env.UPSTASH_REDIS_REST_URL) && Boolean(process.env.UPSTASH_REDIS_REST_TOKEN);
-
-const redis = hasRedisEnv ? Redis.fromEnv() : null;
+const redis = canUseRedisStore() ? Redis.fromEnv() : null;
 
 function roomKey(roomCode: string) {
   return `gameweb:room:${roomCode.toUpperCase()}`;
@@ -46,6 +44,7 @@ function getMemoryStore(): Map<string, Room> {
 }
 
 async function getRoom(roomCode: string): Promise<Room | null> {
+  ensurePersistentStoreConfigured();
   const code = roomCode.toUpperCase();
   if (redis) {
     return (await redis.get<Room>(roomKey(code))) ?? null;
@@ -55,6 +54,7 @@ async function getRoom(roomCode: string): Promise<Room | null> {
 }
 
 async function setRoom(room: Room) {
+  ensurePersistentStoreConfigured();
   if (redis) {
     await redis.set(roomKey(room.roomCode), room, { ex: ROOM_TTL_SECONDS });
     return;
@@ -64,6 +64,7 @@ async function setRoom(room: Room) {
 }
 
 async function roomExists(roomCode: string): Promise<boolean> {
+  ensurePersistentStoreConfigured();
   if (redis) {
     return (await redis.exists(roomKey(roomCode.toUpperCase()))) === 1;
   }

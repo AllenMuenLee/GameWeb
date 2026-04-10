@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { applyAction } from "@/lib/multiplayer/store";
+import { explainStorageError } from "@/lib/server/storage-runtime";
 
 type Params = Promise<{ roomCode: string }>;
 
@@ -20,8 +21,9 @@ export async function POST(req: Request, context: { params: Params }) {
     const room = await applyAction(roomCode, body.playerId, body.action);
     return NextResponse.json({ room });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "UNKNOWN_ERROR";
-    const status = message === "ROOM_NOT_FOUND" ? 404 : 400;
+    const message = explainStorageError(error);
+    const status =
+      message === "ROOM_NOT_FOUND" ? 404 : message === "STORAGE_NOT_CONFIGURED" ? 503 : 400;
     return NextResponse.json({ error: message }, { status });
   }
 }

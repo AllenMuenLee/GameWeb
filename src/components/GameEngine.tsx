@@ -23,6 +23,7 @@ function hzToPollMs(hz: number): number {
 
 type TrailFx = { x: number; y: number; ttl: number; color: string };
 type GhostFx = { x: number; y: number; ttl: number; color: string };
+type ApiError = { error: string };
 
 function deepCloneState(state: GameState): GameState {
   return JSON.parse(JSON.stringify(state)) as GameState;
@@ -39,6 +40,18 @@ function hasActiveInput(input: InputCommand): boolean {
       input.parry ||
       input.feint,
   );
+}
+
+function toUiError(errorCode: string, fallback: string): string {
+  if (errorCode === "ROOM_NOT_FOUND") {
+    return "Room not found or expired. Please create a new room.";
+  }
+
+  if (errorCode === "STORAGE_NOT_CONFIGURED") {
+    return "Server storage is not configured. Contact admin to set Redis env vars.";
+  }
+
+  return fallback;
 }
 
 export default function GameEngine() {
@@ -172,12 +185,12 @@ export default function GameEngine() {
           cache: "no-store",
         });
 
-        const data = (await res.json()) as SyncResponse | { error: string };
+        const data = (await res.json()) as SyncResponse | ApiError;
         const measuredRtt = performance.now() - syncStartedAt;
         rttRef.current = measuredRtt;
         setRttMs(Math.round(measuredRtt));
         if (!res.ok || "error" in data) {
-          setError("Sync failed");
+          setError("error" in data ? toUiError(data.error, "Sync failed") : "Sync failed");
           return;
         }
 
@@ -390,9 +403,9 @@ export default function GameEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerName }),
       });
-      const data = (await res.json()) as CreateRoomResponse | { error: string };
+      const data = (await res.json()) as CreateRoomResponse | ApiError;
       if (!res.ok || "error" in data) {
-        setError("Failed to create room");
+        setError("error" in data ? toUiError(data.error, "Failed to create room") : "Failed to create room");
         return;
       }
       setRoomId(data.roomId);
@@ -412,9 +425,9 @@ export default function GameEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ roomId: joinCode, playerName }),
       });
-      const data = (await res.json()) as JoinRoomResponse | { error: string };
+      const data = (await res.json()) as JoinRoomResponse | ApiError;
       if (!res.ok || "error" in data) {
-        setError("Failed to join room");
+        setError("error" in data ? toUiError(data.error, "Failed to join room") : "Failed to join room");
         return;
       }
       setRoomId(data.roomId);
@@ -434,9 +447,9 @@ export default function GameEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ roomId, playerId }),
       });
-      const data = (await res.json()) as { snapshot: Snapshot } | { error: string };
+      const data = (await res.json()) as { snapshot: Snapshot } | ApiError;
       if (!res.ok || "error" in data) {
-        setError("Failed to restart match");
+        setError("error" in data ? toUiError(data.error, "Failed to restart match") : "Failed to restart match");
         return;
       }
       applyFreshSnapshot(data.snapshot);

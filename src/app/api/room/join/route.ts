@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { JoinRoomResponse } from "@/types/game";
 import { addSecondPlayer, createPlayerIdentity, toSnapshot } from "@/lib/phantom-read/sim";
 import { getRoom, saveRoom } from "@/lib/phantom-read/store";
+import { explainStorageError } from "@/lib/server/storage-runtime";
 
 type JoinRoomBody = {
   roomId?: string;
@@ -11,34 +12,39 @@ type JoinRoomBody = {
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as JoinRoomBody;
-  const roomId = body.roomId?.trim().toUpperCase();
+  try {
+    const body = (await request.json().catch(() => ({}))) as JoinRoomBody;
+    const roomId = body.roomId?.trim().toUpperCase();
 
-  if (!roomId) {
-    return NextResponse.json({ error: "ROOM_ID_REQUIRED" }, { status: 400 });
+    if (!roomId) {
+      return NextResponse.json({ error: "ROOM_ID_REQUIRED" }, { status: 400 });
+    }
+
+    const state = await getRoom(roomId);
+    if (!state) {
+      return NextResponse.json({ error: "ROOM_NOT_FOUND" }, { status: 404 });
+    }
+
+    if (state.playerIds.length >= 2) {
+      return NextResponse.json({ error: "ROOM_FULL" }, { status: 409 });
+    }
+
+    const playerId = createPlayerIdentity();
+    const playerName = body.playerName?.trim().slice(0, 24) || "Player 2";
+    const player = addSecondPlayer(state, playerId, playerName);
+    await saveRoom(state);
+
+    const response: JoinRoomResponse = {
+      roomId: state.roomId,
+      playerId,
+      slot: player.slot,
+      snapshot: toSnapshot(state),
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    const message = explainStorageError(error);
+    const status = message === "STORAGE_NOT_CONFIGURED" ? 503 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
-
-  const state = await getRoom(roomId);
-  if (!state) {
-    return NextResponse.json({ error: "ROOM_NOT_FOUND" }, { status: 404 });
-  }
-
-  if (state.playerIds.length >= 2) {
-    return NextResponse.json({ error: "ROOM_FULL" }, { status: 409 });
-  }
-
-  const playerId = createPlayerIdentity();
-  const playerName = body.playerName?.trim().slice(0, 24) || "Player 2";
-  const player = addSecondPlayer(state, playerId, playerName);
-  await saveRoom(state);
-
-  const response: JoinRoomResponse = {
-    roomId: state.roomId,
-    playerId,
-    slot: player.slot,
-    snapshot: toSnapshot(state),
-  };
-
-  return NextResponse.json(response);
 }
-
