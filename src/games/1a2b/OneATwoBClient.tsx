@@ -140,6 +140,12 @@ export default function OneATwoBClient() {
     setGuess("");
   }
 
+  async function restartGame() {
+    await sendAction({ type: "restart-game" });
+    setSecret("");
+    setGuess("");
+  }
+
   if (!roomCode || !playerId || !room) {
     return (
       <section className="space-y-4 rounded-xl border border-slate-700 bg-slate-900/50 p-6">
@@ -245,9 +251,17 @@ export default function OneATwoBClient() {
       </div>
 
       {room.status === "finished" ? (
-        <p className="text-lg font-semibold text-emerald-300">
-          {room.winnerPlayerId === playerId ? "You win!" : "You lose."}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-lg font-semibold text-emerald-300">
+            {room.winnerPlayerId === playerId ? "You win!" : "You lose."}
+          </p>
+          <button
+            onClick={restartGame}
+            className="rounded border border-cyan-400 px-3 py-1 text-sm text-cyan-200 hover:bg-cyan-500/10"
+          >
+            Play Again
+          </button>
+        </div>
       ) : (
         <p className="text-sm text-slate-300">{isMyTurn ? "Your turn" : "Opponent's turn"}</p>
       )}

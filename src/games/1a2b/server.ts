@@ -97,5 +97,14 @@ export function applyOneATwoBAction(room: Room, playerId: string, action: Record
     return;
   }
 
+  if (actionType === "restart-game") {
+    room.oneATwoB.secrets = Object.fromEntries(room.players.map((p) => [p.id, null]));
+    room.oneATwoB.guesses = [];
+    room.winnerPlayerId = null;
+    room.currentTurnPlayerId = null;
+    room.status = room.players.length === 2 ? "setup" : "waiting";
+    return;
+  }
+
   throw new Error("UNKNOWN_ACTION");
 }

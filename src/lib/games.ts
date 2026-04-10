@@ -7,6 +7,12 @@ export type Game = {
 
 export const games: Game[] = [
   {
+    slug: "phantom-read",
+    title: "Phantom Read",
+    description: "1v1 prediction action duel with simultaneous move reveals.",
+    status: "Live",
+  },
+  {
     slug: "1a2b",
     title: "1A2B",
     description: "Multiplayer number guessing game with room code matching.",

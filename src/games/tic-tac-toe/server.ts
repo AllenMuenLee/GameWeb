@@ -42,6 +42,15 @@ export function applyTicTacToeAction(room: Room, playerId: string, action: Recor
     throw new Error("INVALID_ROOM_STATE");
   }
 
+  if (action.type === "restart-game") {
+    room.ticTacToe.board = Array.from({ length: 9 }, () => null);
+    room.ticTacToe.winner = null;
+    room.winnerPlayerId = null;
+    room.status = room.players.length === 2 ? "playing" : "waiting";
+    room.currentTurnPlayerId = room.players.length === 2 ? room.players[0].id : null;
+    return;
+  }
+
   if (action.type !== "place-mark") {
     throw new Error("UNKNOWN_ACTION");
   }

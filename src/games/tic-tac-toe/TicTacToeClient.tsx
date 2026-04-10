@@ -128,6 +128,29 @@ export default function TicTacToeClient() {
     setError(null);
   }
 
+  async function sendAction(action: Record<string, unknown>) {
+    if (!roomCode || !playerId) return;
+
+    const res = await fetch(`/api/multiplayer/rooms/${roomCode}/action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerId, action }),
+    });
+
+    const data = (await res.json()) as RoomApi | ApiError;
+    if (!res.ok || "error" in data) {
+      setError("Action failed. Please try again.");
+      return;
+    }
+
+    setRoom(data.room);
+    setError(null);
+  }
+
+  async function restartGame() {
+    await sendAction({ type: "restart-game" });
+  }
+
   if (!roomCode || !playerId || !room) {
     return (
       <section className="space-y-4 rounded-xl border border-slate-700 bg-slate-900/50 p-6">
@@ -203,6 +226,14 @@ export default function TicTacToeClient() {
       ) : null}
       {room.status === "playing" ? (
         <p className="text-sm text-slate-300">{isMyTurn ? "Your turn" : "Opponent's turn"}</p>
+      ) : null}
+      {room.status === "finished" ? (
+        <button
+          onClick={restartGame}
+          className="rounded border border-cyan-400 px-3 py-1 text-sm text-cyan-200 hover:bg-cyan-500/10"
+        >
+          Play Again
+        </button>
       ) : null}
 
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}

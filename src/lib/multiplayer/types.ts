@@ -1,4 +1,4 @@
-export type GameType = "1a2b" | "tic-tac-toe";
+export type GameType = "1a2b" | "tic-tac-toe" | "phantom-read";
 
 export type Player = {
   id: string;
@@ -25,6 +25,39 @@ export type TicTacToeState = {
   winner: TicTacToeMark | "draw" | null;
 };
 
+export type PhantomReadAction = "strike" | "parry" | "dash" | "feint" | "focus";
+export type PhantomReadReadTarget = PhantomReadAction;
+export type PhantomReadDashDirection = "left" | "right";
+
+export type PhantomReadMove = {
+  action: PhantomReadAction;
+  read: PhantomReadReadTarget;
+  dashDirection?: PhantomReadDashDirection;
+};
+
+export type PhantomReadFighter = {
+  hp: number;
+  stamina: number;
+  momentum: number;
+  position: number;
+  readStreak: number;
+  pendingBonusDamage: number;
+  lastAction: PhantomReadAction | null;
+};
+
+export type PhantomReadRoundLog = {
+  round: number;
+  lines: string[];
+  at: number;
+};
+
+export type PhantomReadState = {
+  fighters: Record<string, PhantomReadFighter>;
+  round: number;
+  submissions: Record<string, PhantomReadMove | null>;
+  logs: PhantomReadRoundLog[];
+};
+
 export type Room = {
   roomCode: string;
   gameType: GameType;
@@ -36,6 +69,7 @@ export type Room = {
   status: "waiting" | "setup" | "playing" | "finished";
   oneATwoB?: OneATwoBState;
   ticTacToe?: TicTacToeState;
+  phantomRead?: PhantomReadState;
   winnerPlayerId: string | null;
 };
 
@@ -53,4 +87,10 @@ export type PublicRoomState = {
     hasSecret: Record<string, boolean>;
   };
   ticTacToe?: TicTacToeState;
+  phantomRead?: {
+    round: number;
+    fighters: Record<string, PhantomReadFighter>;
+    submitted: Record<string, boolean>;
+    recentLogs: PhantomReadRoundLog[];
+  };
 };

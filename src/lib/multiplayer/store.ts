@@ -2,6 +2,11 @@ import { randomUUID } from "node:crypto";
 import { Redis } from "@upstash/redis";
 import { applyOneATwoBAction, initializeOneATwoBRoom, onJoinOneATwoB } from "@/games/1a2b/server";
 import {
+  applyPhantomReadAction,
+  initializePhantomReadRoom,
+  onJoinPhantomRead,
+} from "@/games/phantom-read/server";
+import {
   applyTicTacToeAction,
   initializeTicTacToeRoom,
   onJoinTicTacToe,
@@ -72,7 +77,12 @@ function initializeGameState(room: Room) {
     return;
   }
 
-  initializeTicTacToeRoom(room);
+  if (room.gameType === "tic-tac-toe") {
+    initializeTicTacToeRoom(room);
+    return;
+  }
+
+  initializePhantomReadRoom(room);
 }
 
 function onPlayerJoined(room: Room, playerId: string) {
@@ -81,7 +91,12 @@ function onPlayerJoined(room: Room, playerId: string) {
     return;
   }
 
-  onJoinTicTacToe(room);
+  if (room.gameType === "tic-tac-toe") {
+    onJoinTicTacToe(room);
+    return;
+  }
+
+  onJoinPhantomRead(room, playerId);
 }
 
 export async function createRoom(gameType: GameType, playerName: string) {
@@ -158,6 +173,16 @@ export function toPublicRoom(room: Room): PublicRoomState {
         }
       : undefined,
     ticTacToe: room.ticTacToe,
+    phantomRead: room.phantomRead
+      ? {
+          round: room.phantomRead.round,
+          fighters: room.phantomRead.fighters,
+          submitted: Object.fromEntries(
+            Object.entries(room.phantomRead.submissions).map(([id, value]) => [id, Boolean(value)]),
+          ),
+          recentLogs: room.phantomRead.logs,
+        }
+      : undefined,
   };
 }
 
@@ -170,8 +195,10 @@ export async function applyAction(roomCode: string, playerId: string, action: Re
 
   if (room.gameType === "1a2b") {
     applyOneATwoBAction(room, playerId, action);
-  } else {
+  } else if (room.gameType === "tic-tac-toe") {
     applyTicTacToeAction(room, playerId, action);
+  } else {
+    applyPhantomReadAction(room, playerId, action);
   }
 
   room.updatedAt = Date.now();

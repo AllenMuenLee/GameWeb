@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import OneATwoBClient from "@/games/1a2b/OneATwoBClient";
+import PhantomReadClient from "@/games/phantom-read/PhantomReadClient";
 import TicTacToeClient from "@/games/tic-tac-toe/TicTacToeClient";
 import { gameBySlug } from "@/lib/games";
 
@@ -26,9 +27,10 @@ export default async function GamePage({ params }: GamePageProps) {
       <p className="mt-4 text-slate-300">{game.description}</p>
 
       <section className="mt-8">
+        {slug === "phantom-read" ? <PhantomReadClient /> : null}
         {slug === "1a2b" ? <OneATwoBClient /> : null}
         {slug === "tic-tac-toe" ? <TicTacToeClient /> : null}
-        {slug !== "1a2b" && slug !== "tic-tac-toe" ? (
+        {slug !== "phantom-read" && slug !== "1a2b" && slug !== "tic-tac-toe" ? (
           <div className="rounded-xl border border-dashed border-cyan-500/60 bg-slate-900/60 p-8">
             This game is not implemented yet.
           </div>

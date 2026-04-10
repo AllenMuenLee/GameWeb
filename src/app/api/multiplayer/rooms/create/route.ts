@@ -10,7 +10,12 @@ type CreateBody = {
 export async function POST(req: Request) {
   const body = (await req.json()) as CreateBody;
 
-  if (!body.gameType || (body.gameType !== "1a2b" && body.gameType !== "tic-tac-toe")) {
+  if (
+    !body.gameType ||
+    (body.gameType !== "1a2b" &&
+      body.gameType !== "tic-tac-toe" &&
+      body.gameType !== "phantom-read")
+  ) {
     return NextResponse.json({ error: "INVALID_GAME_TYPE" }, { status: 400 });
   }
 
