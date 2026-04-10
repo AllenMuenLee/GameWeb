@@ -3,6 +3,7 @@ export type Game = {
   title: string;
   description: string;
   status: "Live" | "Coming Soon";
+  href?: string;
 };
 
 export const games: Game[] = [
@@ -11,6 +12,7 @@ export const games: Game[] = [
     title: "Phantom Read",
     description: "1v1 prediction action duel with simultaneous move reveals.",
     status: "Live",
+    href: "/phantom-read",
   },
   {
     slug: "1a2b",

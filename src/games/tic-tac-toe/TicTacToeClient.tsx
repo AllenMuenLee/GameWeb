@@ -153,18 +153,18 @@ export default function TicTacToeClient() {
 
   if (!roomCode || !playerId || !room) {
     return (
-      <section className="space-y-4 rounded-xl border border-slate-700 bg-slate-900/50 p-6">
-        <p className="text-slate-200">Create a room or enter a room code to play Tic Tac Toe.</p>
+      <section className="space-y-4 rounded-2xl border border-slate-300 bg-white/75 p-6 text-slate-900 shadow-xl">
+        <p className="text-slate-700">Create a room or enter a room code to play Tic Tac Toe.</p>
         <input
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
           placeholder="Your nickname"
-          className="w-full rounded border border-slate-600 bg-slate-950 px-3 py-2"
+          className="w-full rounded border border-slate-300 bg-white px-3 py-2"
         />
         <div className="flex flex-wrap gap-3">
           <button
             onClick={createRoom}
-            className="rounded bg-cyan-500 px-4 py-2 font-semibold text-slate-950 hover:bg-cyan-400"
+            className="rounded bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-700"
           >
             Create Room
           </button>
@@ -173,9 +173,9 @@ export default function TicTacToeClient() {
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               placeholder="Room code"
-              className="rounded border border-slate-600 bg-slate-950 px-3 py-2 uppercase"
+              className="rounded border border-slate-300 bg-white px-3 py-2 uppercase"
             />
-            <button className="rounded border border-cyan-500 px-4 py-2 text-cyan-300 hover:bg-cyan-500/10">
+            <button className="rounded border border-slate-400 px-4 py-2 text-slate-700 hover:bg-slate-100">
               Join
             </button>
           </form>
@@ -188,16 +188,16 @@ export default function TicTacToeClient() {
   const winner = room.ticTacToe?.winner;
 
   return (
-    <section className="space-y-6 rounded-xl border border-slate-700 bg-slate-900/50 p-6">
+    <section className="space-y-6 rounded-2xl border border-slate-300 bg-white/75 p-6 text-slate-900 shadow-xl">
       <div className="flex flex-wrap items-center gap-4">
         <p>
-          Room: <span className="font-bold text-cyan-300">{room.roomCode}</span>
+          Room: <span className="font-bold text-slate-900">{room.roomCode}</span>
         </p>
         <p>You: {me?.name ?? "Player"}</p>
         <p>Your mark: {myMark}</p>
       </div>
 
-      <p className="text-sm text-slate-300">
+      <p className="text-sm text-slate-700">
         Players: {room.players.map((p, index) => `${p.name}(${index === 0 ? "X" : "O"})`).join(" vs ")}
       </p>
 
@@ -211,7 +211,7 @@ export default function TicTacToeClient() {
             disabled={
               room.status !== "playing" || !isMyTurn || cell !== null || room.players.length < 2
             }
-            className="h-20 rounded border border-slate-600 bg-slate-950 text-3xl font-bold text-cyan-200 disabled:opacity-45"
+            className="h-20 rounded border border-slate-300 bg-white text-3xl font-bold text-slate-900 disabled:opacity-45"
           >
             {cell ?? ""}
           </button>
@@ -225,12 +225,12 @@ export default function TicTacToeClient() {
         </p>
       ) : null}
       {room.status === "playing" ? (
-        <p className="text-sm text-slate-300">{isMyTurn ? "Your turn" : "Opponent's turn"}</p>
+        <p className="text-sm text-slate-700">{isMyTurn ? "Your turn" : "Opponent's turn"}</p>
       ) : null}
       {room.status === "finished" ? (
         <button
           onClick={restartGame}
-          className="rounded border border-cyan-400 px-3 py-1 text-sm text-cyan-200 hover:bg-cyan-500/10"
+          className="rounded border border-slate-500 px-3 py-1 text-sm text-slate-700 hover:bg-slate-100"
         >
           Play Again
         </button>

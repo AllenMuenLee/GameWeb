@@ -148,18 +148,18 @@ export default function OneATwoBClient() {
 
   if (!roomCode || !playerId || !room) {
     return (
-      <section className="space-y-4 rounded-xl border border-slate-700 bg-slate-900/50 p-6">
-        <p className="text-slate-200">Create a room or enter a room code to play 1A2B.</p>
+      <section className="space-y-4 rounded-2xl border border-amber-300/30 bg-amber-950/40 p-6 shadow-[0_0_50px_rgba(245,158,11,0.15)]">
+        <p className="text-amber-100">Create a room or enter a room code to play 1A2B.</p>
         <input
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
           placeholder="Your nickname"
-          className="w-full rounded border border-slate-600 bg-slate-950 px-3 py-2"
+          className="w-full rounded border border-amber-700 bg-zinc-950 px-3 py-2"
         />
         <div className="flex flex-wrap gap-3">
           <button
             onClick={createRoom}
-            className="rounded bg-cyan-500 px-4 py-2 font-semibold text-slate-950 hover:bg-cyan-400"
+            className="rounded bg-amber-400 px-4 py-2 font-semibold text-zinc-900 hover:bg-amber-300"
           >
             Create Room
           </button>
@@ -168,9 +168,9 @@ export default function OneATwoBClient() {
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               placeholder="Room code"
-              className="rounded border border-slate-600 bg-slate-950 px-3 py-2 uppercase"
+              className="rounded border border-amber-700 bg-zinc-950 px-3 py-2 uppercase"
             />
-            <button className="rounded border border-cyan-500 px-4 py-2 text-cyan-300 hover:bg-cyan-500/10">
+            <button className="rounded border border-amber-500 px-4 py-2 text-amber-200 hover:bg-amber-500/10">
               Join
             </button>
           </form>
@@ -183,16 +183,16 @@ export default function OneATwoBClient() {
   const mySecretSet = Boolean(room.oneATwoB?.hasSecret[playerId]);
 
   return (
-    <section className="space-y-6 rounded-xl border border-slate-700 bg-slate-900/50 p-6">
+    <section className="space-y-6 rounded-2xl border border-amber-300/30 bg-amber-950/40 p-6 shadow-[0_0_50px_rgba(245,158,11,0.15)]">
       <div className="flex flex-wrap items-center gap-4">
         <p>
-          Room: <span className="font-bold text-cyan-300">{room.roomCode}</span>
+          Room: <span className="font-bold text-amber-300">{room.roomCode}</span>
         </p>
         <p>You: {me?.name ?? "Player"}</p>
         <p>Status: {room.status}</p>
       </div>
 
-      <p className="text-sm text-slate-300">Players: {room.players.map((p) => p.name).join(" vs ")}</p>
+      <p className="text-sm text-amber-100/90">Players: {room.players.map((p) => p.name).join(" vs ")}</p>
 
       {room.status === "waiting" ? <p>Waiting for another player...</p> : null}
 
@@ -203,12 +203,12 @@ export default function OneATwoBClient() {
             onChange={(e) => setSecret(e.target.value)}
             maxLength={4}
             placeholder={mySecretSet ? "Secret already set" : "Set 4 unique digits"}
-            className="rounded border border-slate-600 bg-slate-950 px-3 py-2"
+            className="rounded border border-amber-700 bg-zinc-950 px-3 py-2"
             disabled={mySecretSet}
           />
           <button
             disabled={mySecretSet}
-            className="rounded bg-cyan-500 px-4 py-2 font-semibold text-slate-950 disabled:opacity-40"
+            className="rounded bg-amber-400 px-4 py-2 font-semibold text-zinc-900 disabled:opacity-40"
           >
             Submit Secret
           </button>
@@ -222,12 +222,12 @@ export default function OneATwoBClient() {
             onChange={(e) => setGuess(e.target.value)}
             maxLength={4}
             placeholder={isMyTurn ? "Your turn to guess" : "Waiting for opponent"}
-            className="rounded border border-slate-600 bg-slate-950 px-3 py-2"
+            className="rounded border border-amber-700 bg-zinc-950 px-3 py-2"
             disabled={!isMyTurn || room.status === "finished"}
           />
           <button
             disabled={!isMyTurn || room.status === "finished"}
-            className="rounded bg-cyan-500 px-4 py-2 font-semibold text-slate-950 disabled:opacity-40"
+            className="rounded bg-amber-400 px-4 py-2 font-semibold text-zinc-900 disabled:opacity-40"
           >
             Submit Guess
           </button>
@@ -241,12 +241,12 @@ export default function OneATwoBClient() {
             .slice()
             .reverse()
             .map((item, index) => (
-              <p key={`${item.at}-${index}`} className="text-sm text-slate-200">
+              <p key={`${item.at}-${index}`} className="text-sm text-amber-100">
                 {playerNames.get(item.byPlayerId) ?? "Player"}: {item.guess} {"->"} {item.a}A{item.b}B
               </p>
             ))
         ) : (
-          <p className="text-sm text-slate-400">No guesses yet.</p>
+          <p className="text-sm text-amber-200/70">No guesses yet.</p>
         )}
       </div>
 
@@ -257,7 +257,7 @@ export default function OneATwoBClient() {
           </p>
           <button
             onClick={restartGame}
-            className="rounded border border-cyan-400 px-3 py-1 text-sm text-cyan-200 hover:bg-cyan-500/10"
+            className="rounded border border-amber-400 px-3 py-1 text-sm text-amber-100 hover:bg-amber-500/10"
           >
             Play Again
           </button>
