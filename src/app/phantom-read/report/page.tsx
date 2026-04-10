@@ -1,55 +1,34 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { GameState } from "@/types/game";
+import { advanceToNow } from "@/lib/phantom-read/sim";
+import { getRoom, saveRoom } from "@/lib/phantom-read/store";
 
 function pct(num: number, den: number): string {
   if (den <= 0) return "0%";
   return `${Math.round((num / den) * 100)}%`;
 }
 
-export default function PhantomReadReportPage() {
-  const searchParams = useSearchParams();
-  const roomId = searchParams.get("roomId");
-  const playerId = searchParams.get("playerId");
-  const [state, setState] = useState<GameState | null>(null);
-  const [error, setError] = useState<string | null>(null);
+type ReportPageProps = {
+  searchParams: Promise<{
+    roomId?: string;
+    playerId?: string;
+  }>;
+};
 
-  useEffect(() => {
-    if (!roomId) return;
+export const dynamic = "force-dynamic";
 
-    const load = async () => {
-      try {
-        const res = await fetch(`/api/game/state?roomId=${encodeURIComponent(roomId)}`, {
-          cache: "no-store",
-        });
-        const data = (await res.json()) as { snapshot: { state: GameState } } | { error: string };
-        if (!res.ok || "error" in data) {
-          setError("Failed to load report.");
-          return;
-        }
-        setState(data.snapshot.state);
-        setError(null);
-      } catch {
-        setError("Failed to load report.");
-      }
-    };
+export default async function PhantomReadReportPage({ searchParams }: ReportPageProps) {
+  const { roomId: roomIdRaw, playerId } = await searchParams;
+  const roomId = roomIdRaw?.trim().toUpperCase();
 
-    void load();
-  }, [roomId]);
+  const state = roomId ? await getRoom(roomId) : null;
+  if (state) {
+    advanceToNow(state, Date.now());
+    await saveRoom(state);
+  }
 
-  const me = useMemo(() => {
-    if (!state || !playerId) return null;
-    return state.players[playerId] ?? null;
-  }, [state, playerId]);
-
-  const opponent = useMemo(() => {
-    if (!state || !playerId) return null;
-    const id = state.playerIds.find((x) => x !== playerId);
-    return id ? state.players[id] : null;
-  }, [state, playerId]);
+  const me = state && playerId ? state.players[playerId] : null;
+  const opponentId = state && playerId ? state.playerIds.find((id) => id !== playerId) : undefined;
+  const opponent = opponentId && state ? state.players[opponentId] : null;
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_20%_20%,#142556,transparent_45%),radial-gradient(circle_at_80%_10%,#4a220f,transparent_35%),#050814] px-6 py-10 text-cyan-50 sm:px-10">
@@ -64,9 +43,11 @@ export default function PhantomReadReportPage() {
           <p className="text-cyan-100/85">Room: {roomId ?? "-"}</p>
         </header>
 
-        {error ? <p className="text-rose-300">{error}</p> : null}
-
-        {state && me ? (
+        {!state || !me ? (
+          <section className="rounded-xl border border-cyan-300/30 bg-slate-950/60 p-6">
+            <p className="text-cyan-100/90">Report unavailable. Join a match and open report from the end screen.</p>
+          </section>
+        ) : (
           <section className="space-y-3 rounded-xl border border-cyan-300/30 bg-slate-950/60 p-6">
             <p>
               Winner:{" "}
@@ -107,9 +88,8 @@ export default function PhantomReadReportPage() {
               </article>
             </div>
           </section>
-        ) : null}
+        )}
       </div>
     </main>
   );
 }
-
