@@ -48,7 +48,7 @@ export default function TicTacToeClient() {
       | ApiError;
 
     if (!res.ok || "error" in data) {
-      setError("??????");
+      setError("Failed to create room.");
       return;
     }
 
@@ -69,7 +69,7 @@ export default function TicTacToeClient() {
 
     const data = (await res.json()) as { playerId: string; room: PublicRoomState } | ApiError;
     if (!res.ok || "error" in data) {
-      setError("????,??????????????");
+      setError("Failed to join. Check room code or room capacity.");
       return;
     }
 
@@ -83,7 +83,7 @@ export default function TicTacToeClient() {
     const data = (await res.json()) as RoomApi | ApiError;
 
     if (!res.ok || "error" in data) {
-      setError("?????????");
+      setError("Room not found or expired.");
       return;
     }
 
@@ -97,7 +97,7 @@ export default function TicTacToeClient() {
       try {
         await refreshState(roomCode);
       } catch (err) {
-        setError(getErrorMessage(err, "????"));
+        setError(getErrorMessage(err, "Sync failed."));
       }
     };
 
@@ -120,7 +120,7 @@ export default function TicTacToeClient() {
 
     const data = (await res.json()) as RoomApi | ApiError;
     if (!res.ok || "error" in data) {
-      setError("????,????????");
+      setError("Move failed. Check if it is your turn.");
       return;
     }
 
@@ -131,11 +131,11 @@ export default function TicTacToeClient() {
   if (!roomCode || !playerId || !room) {
     return (
       <section className="space-y-4 rounded-xl border border-slate-700 bg-slate-900/50 p-6">
-        <p className="text-slate-200">???????????????</p>
+        <p className="text-slate-200">Create a room or enter a room code to play Tic Tac Toe.</p>
         <input
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="????"
+          placeholder="Your nickname"
           className="w-full rounded border border-slate-600 bg-slate-950 px-3 py-2"
         />
         <div className="flex flex-wrap gap-3">
@@ -143,17 +143,17 @@ export default function TicTacToeClient() {
             onClick={createRoom}
             className="rounded bg-cyan-500 px-4 py-2 font-semibold text-slate-950 hover:bg-cyan-400"
           >
-            ????
+            Create Room
           </button>
           <form onSubmit={joinRoom} className="flex flex-wrap items-center gap-2">
             <input
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              placeholder="????"
+              placeholder="Room code"
               className="rounded border border-slate-600 bg-slate-950 px-3 py-2 uppercase"
             />
             <button className="rounded border border-cyan-500 px-4 py-2 text-cyan-300 hover:bg-cyan-500/10">
-              ??
+              Join
             </button>
           </form>
         </div>
@@ -168,17 +168,17 @@ export default function TicTacToeClient() {
     <section className="space-y-6 rounded-xl border border-slate-700 bg-slate-900/50 p-6">
       <div className="flex flex-wrap items-center gap-4">
         <p>
-          ??: <span className="font-bold text-cyan-300">{room.roomCode}</span>
+          Room: <span className="font-bold text-cyan-300">{room.roomCode}</span>
         </p>
-        <p>??: {me?.name ?? "??"}</p>
-        <p>????: {myMark}</p>
+        <p>You: {me?.name ?? "Player"}</p>
+        <p>Your mark: {myMark}</p>
       </div>
 
       <p className="text-sm text-slate-300">
-        ??: {room.players.map((p, index) => `${p.name}(${index === 0 ? "X" : "O"})`).join(" vs ")}
+        Players: {room.players.map((p, index) => `${p.name}(${index === 0 ? "X" : "O"})`).join(" vs ")}
       </p>
 
-      {room.status === "waiting" ? <p>?????????...</p> : null}
+      {room.status === "waiting" ? <p>Waiting for another player...</p> : null}
 
       <div className="grid max-w-xs grid-cols-3 gap-2">
         {room.ticTacToe?.board.map((cell, index) => (
@@ -195,14 +195,14 @@ export default function TicTacToeClient() {
         ))}
       </div>
 
-      {winner === "draw" ? <p className="text-lg font-semibold text-amber-300">??</p> : null}
+      {winner === "draw" ? <p className="text-lg font-semibold text-amber-300">Draw</p> : null}
       {winner === "X" || winner === "O" ? (
         <p className="text-lg font-semibold text-emerald-300">
-          ???: {playerNames.get(room.winnerPlayerId ?? "") ?? winner}
+          Winner: {playerNames.get(room.winnerPlayerId ?? "") ?? winner}
         </p>
       ) : null}
       {room.status === "playing" ? (
-        <p className="text-sm text-slate-300">{isMyTurn ? "???" : "??????"}</p>
+        <p className="text-sm text-slate-300">{isMyTurn ? "Your turn" : "Opponent's turn"}</p>
       ) : null}
 
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}

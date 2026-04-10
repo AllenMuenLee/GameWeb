@@ -48,7 +48,7 @@ export default function OneATwoBClient() {
       | ApiError;
 
     if (!res.ok || "error" in data) {
-      setError("??????");
+      setError("Failed to create room.");
       return;
     }
 
@@ -69,7 +69,7 @@ export default function OneATwoBClient() {
 
     const data = (await res.json()) as { playerId: string; room: PublicRoomState } | ApiError;
     if (!res.ok || "error" in data) {
-      setError("????,??????????????");
+      setError("Failed to join. Check room code or room capacity.");
       return;
     }
 
@@ -83,7 +83,7 @@ export default function OneATwoBClient() {
     const data = (await res.json()) as RoomApi | ApiError;
 
     if (!res.ok || "error" in data) {
-      setError("?????????");
+      setError("Room not found or expired.");
       return;
     }
 
@@ -97,7 +97,7 @@ export default function OneATwoBClient() {
       try {
         await refreshState(roomCode);
       } catch (err) {
-        setError(getErrorMessage(err, "????"));
+        setError(getErrorMessage(err, "Sync failed."));
       }
     };
 
@@ -120,7 +120,7 @@ export default function OneATwoBClient() {
 
     const data = (await res.json()) as RoomApi | ApiError;
     if (!res.ok || "error" in data) {
-      setError("????,????????");
+      setError("Action failed. Check if it is your turn.");
       return;
     }
 
@@ -143,11 +143,11 @@ export default function OneATwoBClient() {
   if (!roomCode || !playerId || !room) {
     return (
       <section className="space-y-4 rounded-xl border border-slate-700 bg-slate-900/50 p-6">
-        <p className="text-slate-200">??????????? 1A2B ???</p>
+        <p className="text-slate-200">Create a room or enter a room code to play 1A2B.</p>
         <input
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="????"
+          placeholder="Your nickname"
           className="w-full rounded border border-slate-600 bg-slate-950 px-3 py-2"
         />
         <div className="flex flex-wrap gap-3">
@@ -155,17 +155,17 @@ export default function OneATwoBClient() {
             onClick={createRoom}
             className="rounded bg-cyan-500 px-4 py-2 font-semibold text-slate-950 hover:bg-cyan-400"
           >
-            ????
+            Create Room
           </button>
           <form onSubmit={joinRoom} className="flex flex-wrap items-center gap-2">
             <input
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              placeholder="????"
+              placeholder="Room code"
               className="rounded border border-slate-600 bg-slate-950 px-3 py-2 uppercase"
             />
             <button className="rounded border border-cyan-500 px-4 py-2 text-cyan-300 hover:bg-cyan-500/10">
-              ??
+              Join
             </button>
           </form>
         </div>
@@ -180,17 +180,15 @@ export default function OneATwoBClient() {
     <section className="space-y-6 rounded-xl border border-slate-700 bg-slate-900/50 p-6">
       <div className="flex flex-wrap items-center gap-4">
         <p>
-          ??: <span className="font-bold text-cyan-300">{room.roomCode}</span>
+          Room: <span className="font-bold text-cyan-300">{room.roomCode}</span>
         </p>
-        <p>??: {me?.name ?? "??"}</p>
-        <p>??: {room.status}</p>
+        <p>You: {me?.name ?? "Player"}</p>
+        <p>Status: {room.status}</p>
       </div>
 
-      <p className="text-sm text-slate-300">
-        ??: {room.players.map((p) => p.name).join(" vs ")}
-      </p>
+      <p className="text-sm text-slate-300">Players: {room.players.map((p) => p.name).join(" vs ")}</p>
 
-      {room.status === "waiting" ? <p>?????????...</p> : null}
+      {room.status === "waiting" ? <p>Waiting for another player...</p> : null}
 
       {room.status === "setup" ? (
         <form onSubmit={submitSecret} className="flex flex-wrap items-center gap-2">
@@ -198,7 +196,7 @@ export default function OneATwoBClient() {
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
             maxLength={4}
-            placeholder={mySecretSet ? "??????" : "??4??????"}
+            placeholder={mySecretSet ? "Secret already set" : "Set 4 unique digits"}
             className="rounded border border-slate-600 bg-slate-950 px-3 py-2"
             disabled={mySecretSet}
           />
@@ -206,7 +204,7 @@ export default function OneATwoBClient() {
             disabled={mySecretSet}
             className="rounded bg-cyan-500 px-4 py-2 font-semibold text-slate-950 disabled:opacity-40"
           >
-            ??????
+            Submit Secret
           </button>
         </form>
       ) : null}
@@ -217,7 +215,7 @@ export default function OneATwoBClient() {
             value={guess}
             onChange={(e) => setGuess(e.target.value)}
             maxLength={4}
-            placeholder={isMyTurn ? "????" : "??????"}
+            placeholder={isMyTurn ? "Your turn to guess" : "Waiting for opponent"}
             className="rounded border border-slate-600 bg-slate-950 px-3 py-2"
             disabled={!isMyTurn || room.status === "finished"}
           />
@@ -225,33 +223,33 @@ export default function OneATwoBClient() {
             disabled={!isMyTurn || room.status === "finished"}
             className="rounded bg-cyan-500 px-4 py-2 font-semibold text-slate-950 disabled:opacity-40"
           >
-            ????
+            Submit Guess
           </button>
         </form>
       ) : null}
 
       <div className="space-y-2">
-        <p className="font-semibold">????</p>
+        <p className="font-semibold">Guess History</p>
         {room.oneATwoB?.guesses.length ? (
           room.oneATwoB.guesses
             .slice()
             .reverse()
             .map((item, index) => (
               <p key={`${item.at}-${index}`} className="text-sm text-slate-200">
-                {playerNames.get(item.byPlayerId) ?? "??"}: {item.guess} ? {item.a}A{item.b}B
+                {playerNames.get(item.byPlayerId) ?? "Player"}: {item.guess} {"->"} {item.a}A{item.b}B
               </p>
             ))
         ) : (
-          <p className="text-sm text-slate-400">????</p>
+          <p className="text-sm text-slate-400">No guesses yet.</p>
         )}
       </div>
 
       {room.status === "finished" ? (
         <p className="text-lg font-semibold text-emerald-300">
-          {room.winnerPlayerId === playerId ? "???" : "???"}
+          {room.winnerPlayerId === playerId ? "You win!" : "You lose."}
         </p>
       ) : (
-        <p className="text-sm text-slate-300">{isMyTurn ? "???" : "??????"}</p>
+        <p className="text-sm text-slate-300">{isMyTurn ? "Your turn" : "Opponent's turn"}</p>
       )}
 
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
