@@ -48,7 +48,7 @@ function toUiError(errorCode: string, fallback: string): string {
   }
 
   if (errorCode === "STORAGE_NOT_CONFIGURED") {
-    return "Server storage is not configured. Contact admin to set Redis env vars.";
+    return "Server storage is not configured. Contact admin.";
   }
 
   return fallback;

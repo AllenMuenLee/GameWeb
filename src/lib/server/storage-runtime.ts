@@ -2,7 +2,7 @@ const hasRedisEnv =
   Boolean(process.env.UPSTASH_REDIS_REST_URL) && Boolean(process.env.UPSTASH_REDIS_REST_TOKEN);
 
 const allowMemoryStoreFallback =
-  process.env.NODE_ENV !== "production" || process.env.ALLOW_MEMORY_STORE_IN_PROD === "1";
+  process.env.ALLOW_MEMORY_STORE_IN_PROD !== "0";
 
 export function canUseRedisStore(): boolean {
   return hasRedisEnv;

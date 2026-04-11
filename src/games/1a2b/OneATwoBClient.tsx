@@ -19,7 +19,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
 function toUiError(errorCode: string, fallback: string): string {
   if (errorCode === "ROOM_NOT_FOUND") return "Room not found or expired.";
   if (errorCode === "STORAGE_NOT_CONFIGURED") {
-    return "Server storage is not configured. Contact admin to set Redis env vars.";
+    return "Server storage is not configured. Contact admin.";
   }
   return fallback;
 }
